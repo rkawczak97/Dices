@@ -1,14 +1,15 @@
 from Dices import *
+from Player import *
 
 class Game:
     def __init__(self, n_players: int=1, n_throws: int=3) -> None:
         self.n_players = n_players
         self.n_throws = n_throws
-        self.player_score = dict()
 
     def play(self):
         d = Dices()
-        self.player_score = {k: '-' for k in range(d.min_dice, d.max_dice+1)}
+        name = input('Type player name: ')
+        p = Player(d, name)
         while True:
             t = input('Throw dices [y/n]?: ')
             if t.lower() == 'y':
@@ -19,9 +20,10 @@ class Game:
                     self.select_dices_to_return(d, t)
                     print('({}/{}) S: {}'.format(t+1, self.n_throws, d.get_dices_side()))
                 self.display_score(d)
-                # print current score
-                # select score
+                self.display_player_score(p)
+                self.select_score(d, p)
             else:
+                self.display_player_score(p)
                 print('Closing the game...')
                 break
             d.reset()
@@ -38,15 +40,8 @@ class Game:
             idx = [int(x)-1 for x in k.split()]
             dices.back(idx)
 
-    def select_score(self, dices: Dices):
-        s = int(input('Select score: '))
-        if self.player_score[s] == '-':
-            self.player_score[s] = dices.score()[s]
-        else:
-            pass
-
     def display_score(self, dices: Dices):
-        score = dices.score()
+        score = dices.get_score()
         print('SCORE: | ', end='')
         for k, v in score.items():
             if v == 0:
@@ -55,4 +50,19 @@ class Game:
                 score[k] = '+{}'.format(v)
             else:
                 score[k] = str(v)
+            print('{}: {} |'.format(k, score[k]), end=' ')
+        print('\n', end='')
+    
+    def select_score(self, dice: Dices, player: Player):
+        s = int(input('Choose score: '))
+        if player.get_score()[s] == None:
+            player.get_score()[s] = dice.get_score()[s]
+        else:
+            print('Choose again...')
+            return self.select_score(dice)
+
+    def display_player_score(self, player: Player):
+        print('{}: | '.format(player.get_name()), end='')
+        for k, v in player.get_score().items():
             print('{}: {} |'.format(k, v), end=' ')
+        print('\n', end='')

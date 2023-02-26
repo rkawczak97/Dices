@@ -2,20 +2,18 @@ import random
 from collections import Counter
 
 class Dices:
-    def __init__(self, n: int=5, min_dice: int=1, max_dice: int=6) -> None:
+    def __init__(self, n: int=5, sides: list=[1,2,3,4,5,6]) -> None:
         assert n >= 1, 'Number of dices must be greater then 0!'
         self.n = n
+        self.sides = sides
         self.dices_throw = [None]*n
         self.dices_side = list()
-        self.min_dice = min_dice
-        self.max_dice = max_dice
+        self.score = dict()
 
     def throw(self):
         n_dices = len(self.dices_throw)
-        if n_dices <= 0:
-            print('No dices to throw!')
-        else:
-            self.dices_throw = [random.randint(self.min_dice , self.max_dice) for _ in range(n_dices)]
+        self.dices_throw = [random.choice(self.sides) for _ in range(n_dices)]
+        self.update_score()
 
     def keep(self, idx: list):
         idx = sorted(idx)[::-1]
@@ -29,20 +27,24 @@ class Dices:
             self.dices_throw.append(self.dices_side[i])
             self.dices_side.pop(i)
     
-    def score(self):
-        score = {k: k*(-3) for k in range(self.min_dice, self.max_dice+1)}
-        counter = Counter(self.dices_side + self.dices_throw)
-        tmp = {k: k*((-3)+v) for k, v in counter.items()}
-        for k, v in tmp.items():
-            score[k] = v
-        return score
+    def update_score(self):
+        self.score = {s: s*(-3) for s in self.sides}
+        counter = Counter(self.dices_side+self.dices_throw)
+        for k in self.score.keys():
+            self.score[k] += (k*counter[k])
 
     def reset(self):
         self.dices_throw = [None]*self.n
-        self.dices_side = list()
+        self.dices_side = list()   
 
     def get_dices_throw(self):
         return self.dices_throw
     
     def get_dices_side(self):
         return self.dices_side
+    
+    def get_sides(self):
+        return self.sides
+
+    def get_score(self):
+        return self.score
