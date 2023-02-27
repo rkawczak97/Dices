@@ -4,11 +4,11 @@ from collections import Counter
 class Dices:
     def __init__(self, n: int=5, sides: list=[1,2,3,4,5,6]) -> None:
         assert n >= 1, 'Number of dices must be greater then 0!'
-        self.n = n
-        self.sides = sides
-        self.dices_throw = [None]*n
-        self.dices_side = list()
-        self.score = dict()
+        self.n: int = n
+        self.sides: list[int] = sides
+        self.dices_throw: list[int] = [None]*n
+        self.dices_side: list[int] = list()
+        self.score: dict = dict()
 
     def throw(self):
         n_dices = len(self.dices_throw)

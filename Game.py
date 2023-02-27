@@ -2,47 +2,66 @@ from Dices import *
 from Player import *
 
 class Game:
-    def __init__(self, n_players: int=1, n_throws: int=3) -> None:
-        self.n_players = n_players
-        self.n_throws = n_throws
+    def __init__(self, n_players: int=1, n_throws: int=3, rounds: int=6) -> None:
+        self.n_players: int = n_players
+        self.n_throws: int = n_throws
+        self.rounds: int = rounds
+        self.dices: Dices = Dices()
+        self.players: list[Player] = self.create_players()
 
+    def create_players(self):
+        players = list()
+        for i in range(self.n_players):
+            name = input('Player {} name: '.format(i+1))
+            players.append(Player(self.dices, name))
+        return players
+        
     def play(self):
-        d = Dices()
-        name = input('Type player name: ')
-        p = Player(d, name)
-        while True:
+        for _ in range(self.rounds):
             t = input('Throw dices [y/n]?: ')
             if t.lower() == 'y':
-                for t in range(self.n_throws):
-                    d.throw()
-                    print('({}/{}) T: {}'.format(t+1, self.n_throws, d.get_dices_throw()))
-                    self.select_dices_to_keep(d, t)
-                    self.select_dices_to_return(d, t)
-                    print('({}/{}) S: {}'.format(t+1, self.n_throws, d.get_dices_side()))
-                self.display_score(d)
-                self.display_player_score(p)
-                self.select_score(d, p)
+                for p in self.players:
+                    for t in range(1, self.n_throws+1):
+                        self.dices.throw()
+                        self.display_status(p, t)
+                        if t != self.n_throws:
+                            self.select_dices_to_keep(t)
+                            if t != 1:
+                                self.select_dices_to_return(t)  
+                    self.display_score()
+                    self.display_player_score(p)
+                    self.select_score(p)
+                    self.dices.reset()
             else:
-                self.display_player_score(p)
                 print('Closing the game...')
                 break
-            d.reset()
+            self.dices.reset()
+        self.display_results()
 
-    def select_dices_to_keep(self, dices: Dices, throw: int):
-        k = input('({}/{}) Select dices to keep: '.format(throw+1, self.n_throws))
+    def select_dices_to_keep(self, throw: int):
+        k = input('Select dices to keep: '.format(throw, self.n_throws))
         if k != '':
             idx = [int(x)-1 for x in k.split()]
-            dices.keep(idx)
+            self.dices.keep(idx)
     
-    def select_dices_to_return(self, dices: Dices, throw: int):
-        k = input('({}/{}) Select dices to return: '.format(throw+1, self.n_throws))
+    def select_dices_to_return(self, throw: int):
+        k = input('Select dices to return: '.format(throw, self.n_throws))
         if k != '':
             idx = [int(x)-1 for x in k.split()]
-            dices.back(idx)
+            self.dices.back(idx)
+   
+    def select_score(self, player: Player):
+        s = int(input('Choose score: '))
+        if player.get_score()[s] == None:
+            player.set_score(s, self.dices.get_score()[s])
+        else:
+            print('Choose again...')
+            return self.select_score()
 
-    def display_score(self, dices: Dices):
-        score = dices.get_score()
-        print('SCORE: | ', end='')
+    def display_score(self):
+        score = self.dices.get_score()
+        print('-'*30)
+        print('Score: | ', end='')
         for k, v in score.items():
             if v == 0:
                 score[k] = 'X'
@@ -52,17 +71,23 @@ class Game:
                 score[k] = str(v)
             print('{}: {} |'.format(k, score[k]), end=' ')
         print('\n', end='')
-    
-    def select_score(self, dice: Dices, player: Player):
-        s = int(input('Choose score: '))
-        if player.get_score()[s] == None:
-            player.get_score()[s] = dice.get_score()[s]
-        else:
-            print('Choose again...')
-            return self.select_score(dice)
+
+    def display_status(self, player: Player, throw: int):
+        print('-'*30)
+        print('({}/{}) {}'.format(throw, self.n_throws, player.get_name()))
+        print('S: {} | T: {}'.format(self.dices.get_dices_side(), self.dices.get_dices_throw()))
 
     def display_player_score(self, player: Player):
         print('{}: | '.format(player.get_name()), end='')
         for k, v in player.get_score().items():
+            if v == None:
+                v = '  '    
             print('{}: {} |'.format(k, v), end=' ')
         print('\n', end='')
+    
+    def display_results(self):
+        print('-'*30)
+        print('Final results:')
+        for player in self.players:
+            self.display_player_score(player)
+        # TODO
