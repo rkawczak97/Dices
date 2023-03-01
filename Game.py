@@ -1,9 +1,12 @@
+import pandas as pd
 from Dices import *
 from Player import *
 
 class Game:
-    def __init__(self, n_players: int=1, n_throws: int=3, rounds: int=6) -> None:
-        self.n_players: int = n_players
+    def __init__(self, n_throws: int=3, rounds: int=6) -> None:
+        self.language: str = input('[PL/EN]?: ').lower()
+        self.lang_dict: dict[str, str] = pd.read_excel('src/language.xlsx', index_col='key')[self.language].to_dict()
+        self.n_players: int = int(input(self.lang_dict['n_players']))
         self.n_throws: int = n_throws
         self.rounds: int = rounds
         self.dices: Dices = Dices()
@@ -12,13 +15,13 @@ class Game:
     def create_players(self):
         players = list()
         for i in range(self.n_players):
-            name = input('Player {} name: '.format(i+1))
+            name = input(self.lang_dict['player_name'].format(i+1))
             players.append(Player(self.dices, name))
         return players
         
     def play(self):
         for _ in range(self.rounds):
-            t = input('Throw dices [y/n]?: ')
+            t = input(self.lang_dict['throw_dices'])
             if t.lower() == 'y':
                 for p in self.players:
                     for t in range(1, self.n_throws+1):
@@ -33,35 +36,35 @@ class Game:
                     self.select_score(p)
                     self.dices.reset()
             else:
-                print('Closing the game...')
+                print(self.lang_dict['close_game'])
                 break
             self.dices.reset()
         self.display_results()
 
     def select_dices_to_keep(self, throw: int):
-        k = input('Select dices to keep: '.format(throw, self.n_throws))
+        k = input(self.lang_dict['keep_dices'].format(throw, self.n_throws))
         if k != '':
             idx = [int(x)-1 for x in k.split()]
             self.dices.keep(idx)
     
     def select_dices_to_return(self, throw: int):
-        k = input('Select dices to return: '.format(throw, self.n_throws))
+        k = input(self.lang_dict['return_dices'].format(throw, self.n_throws))
         if k != '':
             idx = [int(x)-1 for x in k.split()]
             self.dices.back(idx)
    
     def select_score(self, player: Player):
-        s = int(input('Choose score: '))
+        s = int(input(self.lang_dict['choose_score']))
         if player.get_score()[s] == None:
             player.set_score(s, self.dices.get_score()[s])
         else:
-            print('Choose again...')
+            print(self.lang_dict['choose_again'])
             return self.select_score()
 
     def display_score(self):
         score = self.dices.get_score()
         print('-'*30)
-        print('Score: | ', end='')
+        print('Score:'+' | ', end='')
         for k, v in score.items():
             if v == 0:
                 score[k] = 'X'
@@ -87,7 +90,7 @@ class Game:
     
     def display_results(self):
         print('-'*30)
-        print('Final results:')
+        print(self.lang_dict['final_results'])
         for player in self.players:
             self.display_player_score(player)
         # TODO
