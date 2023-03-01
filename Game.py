@@ -4,8 +4,9 @@ from Player import *
 
 class Game:
     def __init__(self, n_throws: int=3, rounds: int=6) -> None:
-        self.language: str = input('[PL/EN]?: ').lower()
-        self.lang_dict: dict[str, str] = pd.read_excel('src/language.xlsx', index_col='key')[self.language].to_dict()
+        self.lang_file = pd.read_excel('src/language.xlsx', index_col='key')
+        self.lang: str = input('[PL/EN]?: ').lower()
+        self.lang_dict: dict[str, str] = self.lang_file[self.lang].to_dict()
         self.n_players: int = int(input(self.lang_dict['n_players']))
         self.n_throws: int = n_throws
         self.rounds: int = rounds
@@ -64,33 +65,38 @@ class Game:
     def display_score(self):
         score = self.dices.get_score()
         print('-'*30)
-        print('Score:'+' | ', end='')
+        print(self.lang_dict['score']+'\t| ', end='')
         for k, v in score.items():
             if v == 0:
                 score[k] = 'X'
             elif v > 0:
-                score[k] = '+{}'.format(v)
+                score[k] = '+{0}'.format(v)
             else:
                 score[k] = str(v)
-            print('{}: {} |'.format(k, score[k]), end=' ')
+            print('{0}: {1} |'.format(k, score[k]), end=' ')
         print('\n', end='')
 
     def display_status(self, player: Player, throw: int):
         print('-'*30)
-        print('({}/{}) {}'.format(throw, self.n_throws, player.get_name()))
-        print('S: {} | T: {}'.format(self.dices.get_dices_side(), self.dices.get_dices_throw()))
+        print('({0}/{1}) {2}'.format(throw, self.n_throws, player.get_name()))
+        print('S: {0} | T: {1}'.format(self.dices.get_dices_side(), self.dices.get_dices_throw()))
 
     def display_player_score(self, player: Player):
-        print('{}: | '.format(player.get_name()), end='')
+        print('{0}: | '.format(player.get_name()), end='')
         for k, v in player.get_score().items():
             if v == None:
                 v = '  '    
-            print('{}: {} |'.format(k, v), end=' ')
+            print('{0}: {1} |'.format(k, v), end=' ')
         print('\n', end='')
     
     def display_results(self):
         print('-'*30)
         print(self.lang_dict['final_results'])
+        places = list()
         for player in self.players:
             self.display_player_score(player)
-        # TODO
+            player.count_total_score()
+            places.append((player.get_name(), player.get_total_score()))
+        places_sorted = sorted(places, key=lambda x:x[1], reverse=True)
+        for i, p in enumerate(places_sorted):
+            print('{0}. {1[0]}: {1[1]}'.format(i+1, p))
