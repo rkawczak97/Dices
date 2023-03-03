@@ -1,0 +1,41 @@
+* {
+font-size: 12pt;
+font-family: sans-serif;
+text-align: center; 
+}
+
+.roll-button {
+    background-color: rgb(106, 106, 255);
+    color: white;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 150ms;
+    margin-top: 30px;
+}
+
+.roll-button:hover {
+    opacity: 0.8;
+}
+
+.roll-button:active {
+    opacity: 0.5;
+}
+
+.dice-img {
+    margin: 20px 10px;
+    width: 64px;
+    cursor: pointer;
+    /* border: 1px solid green;
+    border-radius: 10px; */
+}
+
+a {
+    color: grey;
+}
+
+p {
+    line-height: 1.5;
+}
